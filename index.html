@@ -29,12 +29,12 @@
 
       /* Poker Accents */
       --poker-red: #ff4444;
-      --poker-gold: #ffd700;
+      --poker-gold: #fe750f;
       --poker-green: #00c853;
 
       /* Glow Effects */
       --glow-red: rgba(255, 68, 68, 0.4);
-      --glow-gold: rgba(255, 215, 0, 0.4);
+      --glow-gold: rgba(254, 117, 15, 0.4);
       --glow-green: rgba(0, 200, 83, 0.4);
 
       /* Timer */
@@ -43,7 +43,7 @@
       --timer-danger: #ff4444;
 
       /* Gradients */
-      --gradient-gold: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+      --gradient-gold: linear-gradient(135deg, #fe750f 0%, #e85a00 100%);
       --gradient-card: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
 
       /* Fonts */
@@ -81,7 +81,7 @@
       position: fixed;
       inset: 0;
       background:
-        radial-gradient(ellipse at 20% 0%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 20% 0%, rgba(254, 117, 15, 0.03) 0%, transparent 50%),
         radial-gradient(ellipse at 80% 100%, rgba(0, 200, 83, 0.03) 0%, transparent 50%),
         radial-gradient(ellipse at 50% 50%, rgba(22, 27, 34, 0.5) 0%, transparent 70%);
       pointer-events: none;
@@ -98,6 +98,284 @@
       z-index: 0;
     }
 
+    /* ===== SPLASH SCREEN ===== */
+    .splash-screen {
+      position: fixed;
+      inset: 0;
+      background: var(--bg-primary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .splash-screen.hidden {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+
+    .splash-suits {
+      display: flex;
+      gap: 1rem;
+      font-size: 3rem;
+      margin-bottom: 2rem;
+      animation: suitsFadeIn 1s ease-out;
+    }
+
+    .splash-suits .suit {
+      animation: suitBounce 0.6s ease-out;
+      animation-fill-mode: both;
+    }
+
+    .splash-suits .suit:nth-child(1) { animation-delay: 0.1s; }
+    .splash-suits .suit:nth-child(2) { animation-delay: 0.2s; }
+    .splash-suits .suit:nth-child(3) { animation-delay: 0.3s; }
+    .splash-suits .suit:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes suitBounce {
+      0% { opacity: 0; transform: translateY(-30px) scale(0.5); }
+      60% { transform: translateY(5px) scale(1.1); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .splash-title {
+      font-size: 3.5rem;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+      text-align: center;
+      animation: titleFadeIn 0.8s ease-out 0.5s both;
+    }
+
+    @keyframes titleFadeIn {
+      0% { opacity: 0; transform: translateY(20px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .splash-underline {
+      width: 300px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--poker-gold), transparent);
+      margin: 1rem 0;
+      animation: underlineGrow 0.6s ease-out 0.8s both;
+    }
+
+    @keyframes underlineGrow {
+      0% { transform: scaleX(0); opacity: 0; }
+      100% { transform: scaleX(1); opacity: 0.8; }
+    }
+
+    .splash-subtitle {
+      font-size: 1.25rem;
+      color: var(--text-secondary);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 3rem;
+      animation: titleFadeIn 0.8s ease-out 1s both;
+    }
+
+    .splash-start-btn {
+      padding: 1.25rem 3rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      font-family: inherit;
+      background: var(--gradient-gold);
+      color: #000;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      animation: buttonFadeIn 0.8s ease-out 1.3s both;
+      box-shadow: 0 4px 20px rgba(254, 117, 15, 0.3);
+    }
+
+    @keyframes buttonFadeIn {
+      0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .splash-start-btn:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 8px 30px rgba(254, 117, 15, 0.4);
+    }
+
+    /* ===== ONBOARDING OVERLAY ===== */
+    .onboarding-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 10, 10, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 900;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    .onboarding-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .onboarding-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 24px;
+      padding: 3rem;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .onboarding-step {
+      display: none;
+    }
+
+    .onboarding-step.active {
+      display: block;
+      animation: stepFadeIn 0.4s ease-out;
+    }
+
+    @keyframes stepFadeIn {
+      0% { opacity: 0; transform: translateX(20px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+
+    .onboarding-icon {
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .onboarding-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 1rem;
+    }
+
+    .onboarding-text {
+      font-size: 1.1rem;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+
+    .onboarding-highlight {
+      color: var(--poker-gold);
+      font-weight: 600;
+    }
+
+    .onboarding-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .onboarding-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border-default);
+      transition: all 0.3s ease;
+    }
+
+    .onboarding-dot.active {
+      background: var(--poker-gold);
+      transform: scale(1.2);
+    }
+
+    .onboarding-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .onboarding-btn {
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      border-radius: 30px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+    }
+
+    .onboarding-btn-secondary {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+    }
+
+    .onboarding-btn-secondary:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+
+    .onboarding-btn-primary {
+      background: var(--gradient-gold);
+      color: #000;
+      border: none;
+    }
+
+    .onboarding-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(254, 117, 15, 0.3);
+    }
+
+    .onboarding-skip {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .onboarding-skip:hover {
+      color: var(--text-secondary);
+    }
+
+    /* ===== RULES LINK ===== */
+    .rules-link {
+      position: fixed;
+      bottom: 1.5rem;
+      left: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-decoration: none;
+      padding: 0.5rem 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 50;
+    }
+
+    .rules-link:hover {
+      color: var(--text-primary);
+      background: var(--bg-elevated);
+      border-color: var(--poker-gold);
+    }
+
+    .rules-link .icon {
+      font-size: 1rem;
+    }
+
     /* ===== CONTAINER ===== */
     .container {
       max-width: 1200px;
@@ -108,6 +386,12 @@
       flex-direction: column;
       position: relative;
       z-index: 1;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+
+    .container.visible {
+      opacity: 1;
     }
 
     /* ===== GAME AREA ===== */
@@ -349,7 +633,7 @@
       align-items: center;
       min-height: 160px;
       box-shadow:
-        0 0 0 1px rgba(255, 215, 0, 0.08),
+        0 0 0 1px rgba(254, 117, 15, 0.08),
         0 4px 6px rgba(0, 0, 0, 0.2),
         0 12px 24px rgba(0, 0, 0, 0.3),
         0 24px 48px rgba(0, 0, 0, 0.2);
@@ -361,7 +645,7 @@
       inset: 0;
       border-radius: 20px;
       padding: 1px;
-      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent 50%, transparent 50%, rgba(0, 200, 83, 0.1));
+      background: linear-gradient(135deg, rgba(254, 117, 15, 0.15), transparent 50%, transparent 50%, rgba(0, 200, 83, 0.1));
       -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
       mask-composite: exclude;
       -webkit-mask-composite: xor;
@@ -394,7 +678,7 @@
       border-radius: 20px;
       letter-spacing: 0.1em;
       margin-bottom: 1rem;
-      box-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
+      box-shadow: 0 2px 12px rgba(254, 117, 15, 0.4);
     }
 
     .question-text {
@@ -554,7 +838,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+      background: radial-gradient(ellipse at center, rgba(254, 117, 15, 0.15) 0%, transparent 70%);
       opacity: 0;
       transition: opacity 0.5s ease;
       pointer-events: none;
@@ -616,8 +900,8 @@
       border-color: var(--poker-gold);
       box-shadow:
         0 0 0 2px var(--poker-gold),
-        0 0 50px rgba(255, 215, 0, 0.2),
-        0 0 100px rgba(255, 215, 0, 0.1),
+        0 0 50px rgba(254, 117, 15, 0.2),
+        0 0 100px rgba(254, 117, 15, 0.1),
         0 16px 48px rgba(0, 0, 0, 0.4);
       transform: translateY(-3px);
     }
@@ -682,7 +966,7 @@
 
     .preset-btn.active {
       color: var(--poker-gold);
-      background: rgba(255, 215, 0, 0.15);
+      background: rgba(254, 117, 15, 0.15);
     }
 
     /* ===== ACTION BUTTONS ===== */
@@ -707,8 +991,8 @@
       color: #000;
       border: none;
       box-shadow:
-        0 4px 15px rgba(255, 215, 0, 0.25),
-        0 8px 25px rgba(255, 215, 0, 0.15);
+        0 4px 15px rgba(254, 117, 15, 0.25),
+        0 8px 25px rgba(254, 117, 15, 0.15);
     }
 
     /* Shine sweep effect */
@@ -735,8 +1019,8 @@
     .btn-primary:hover {
       transform: translateY(-3px);
       box-shadow:
-        0 6px 20px rgba(255, 215, 0, 0.35),
-        0 12px 35px rgba(255, 215, 0, 0.2);
+        0 6px 20px rgba(254, 117, 15, 0.35),
+        0 12px 35px rgba(254, 117, 15, 0.2);
     }
 
     .btn-primary:active {
@@ -866,7 +1150,101 @@
   </style>
 </head>
 <body>
-  <div class="container">
+  <!-- Splash Screen -->
+  <div class="splash-screen" id="splashScreen">
+    <div class="splash-suits">
+      <span class="suit black">&#9824;</span>
+      <span class="suit red">&#9829;</span>
+      <span class="suit red">&#9830;</span>
+      <span class="suit black">&#9827;</span>
+    </div>
+    <h1 class="splash-title">Das Duell um die Geld</h1>
+    <div class="splash-underline"></div>
+    <p class="splash-subtitle">A different Poker experience</p>
+    <button class="splash-start-btn" onclick="showOnboarding()">Start Game</button>
+  </div>
+
+  <!-- Onboarding Overlay -->
+  <div class="onboarding-overlay" id="onboardingOverlay">
+    <div class="onboarding-card">
+      <button class="onboarding-skip" onclick="skipOnboarding()">Skip &rarr;</button>
+
+      <!-- Step 1: Welcome -->
+      <div class="onboarding-step active" data-step="1">
+        <div class="onboarding-icon">&#127183;</div>
+        <h2 class="onboarding-title">Welcome to the Game!</h2>
+        <p class="onboarding-text">
+          This is a <span class="onboarding-highlight">trivia betting game</span> where knowledge meets poker strategy.
+          Players bet chips on whether they know the answer to numerical questions.
+        </p>
+      </div>
+
+      <!-- Step 2: How it works -->
+      <div class="onboarding-step" data-step="2">
+        <div class="onboarding-icon">&#128161;</div>
+        <h2 class="onboarding-title">How It Works</h2>
+        <p class="onboarding-text">
+          A <span class="onboarding-highlight">question</span> is revealed first.
+          Then <span class="onboarding-highlight">two hints</span> are shown one by one.
+          Finally, the <span class="onboarding-highlight">answer</span> is revealed.
+          Use the REVEAL button to progress through each stage.
+        </p>
+      </div>
+
+      <!-- Step 3: Betting -->
+      <div class="onboarding-step" data-step="3">
+        <div class="onboarding-icon">&#128176;</div>
+        <h2 class="onboarding-title">The Betting Rounds</h2>
+        <p class="onboarding-text">
+          After seeing the question, players can <span class="onboarding-highlight">bet, check, or fold</span>.
+          After each hint, there's another betting round.
+          The closest guess to the answer wins the pot!
+        </p>
+      </div>
+
+      <!-- Step 4: Timer -->
+      <div class="onboarding-step" data-step="4">
+        <div class="onboarding-icon">&#9202;</div>
+        <h2 class="onboarding-title">Use the Timer</h2>
+        <p class="onboarding-text">
+          The <span class="onboarding-highlight">timer</span> in the bottom right helps keep the game moving.
+          Set it to 1, 2, or 3 minutes for betting rounds.
+          When time runs out, players must decide!
+        </p>
+      </div>
+
+      <!-- Step 5: Ready -->
+      <div class="onboarding-step" data-step="5">
+        <div class="onboarding-icon">&#127942;</div>
+        <h2 class="onboarding-title">Ready to Play?</h2>
+        <p class="onboarding-text">
+          You can always check the <span class="onboarding-highlight">rules</span> by clicking the link in the bottom left corner.
+          Good luck and may the best guesser win!
+        </p>
+      </div>
+
+      <div class="onboarding-dots">
+        <div class="onboarding-dot active" data-dot="1"></div>
+        <div class="onboarding-dot" data-dot="2"></div>
+        <div class="onboarding-dot" data-dot="3"></div>
+        <div class="onboarding-dot" data-dot="4"></div>
+        <div class="onboarding-dot" data-dot="5"></div>
+      </div>
+
+      <div class="onboarding-buttons">
+        <button class="onboarding-btn onboarding-btn-secondary" id="onboardingBack" onclick="prevOnboardingStep()" style="display: none;">Back</button>
+        <button class="onboarding-btn onboarding-btn-primary" id="onboardingNext" onclick="nextOnboardingStep()">Next</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rules Link (always visible) -->
+  <button class="rules-link" id="rulesLink" onclick="showRules()" style="display: none;">
+    <span class="icon">&#128220;</span>
+    <span>Rules</span>
+  </button>
+
+  <div class="container" id="gameContainer">
     <!-- Header: Centered Title -->
     <header class="header">
       <div class="header-top">
@@ -965,7 +1343,7 @@
 
     <!-- Timer Panel - Bottom Right -->
     <div class="timer-panel">
-      <div class="timer-display" id="timerDisplay">0:30</div>
+      <div class="timer-display" id="timerDisplay">1:00</div>
       <div class="timer-bar">
         <div class="timer-progress" id="timerProgress"></div>
       </div>
@@ -975,10 +1353,9 @@
         <button class="timer-btn" id="resetBtn" onclick="resetTimer()">&#8635;</button>
       </div>
       <div class="timer-presets">
-        <button class="preset-btn" onclick="setTimerPreset(15)">15s</button>
-        <button class="preset-btn active" onclick="setTimerPreset(30)">30s</button>
-        <button class="preset-btn" onclick="setTimerPreset(45)">45s</button>
-        <button class="preset-btn" onclick="setTimerPreset(60)">60s</button>
+        <button class="preset-btn active" onclick="setTimerPreset(60)">1 min</button>
+        <button class="preset-btn" onclick="setTimerPreset(120)">2 min</button>
+        <button class="preset-btn" onclick="setTimerPreset(180)">3 min</button>
       </div>
     </div>
   </div>
@@ -1068,8 +1445,8 @@
       revealStage: 0,
       usedQuestions: [],
       soundEnabled: true,
-      timerDuration: 30,
-      timerRemaining: 30,
+      timerDuration: 60,
+      timerRemaining: 60,
       timerInterval: null,
       timerRunning: false
     };
@@ -1236,9 +1613,10 @@
       gameState.timerRemaining = seconds;
       updateTimerDisplay();
 
+      const minutes = seconds / 60;
       document.querySelectorAll('.preset-btn').forEach(btn => {
         btn.classList.remove('active');
-        if (btn.textContent === `${seconds}s`) {
+        if (btn.textContent === `${minutes} min`) {
           btn.classList.add('active');
         }
       });
@@ -1352,6 +1730,76 @@
       loadQuestion(question);
     }
 
+    // ===== ONBOARDING STATE =====
+    let onboardingStep = 1;
+    const totalOnboardingSteps = 5;
+
+    // ===== SPLASH & ONBOARDING FUNCTIONS =====
+    function showOnboarding() {
+      document.getElementById('splashScreen').classList.add('hidden');
+      document.getElementById('onboardingOverlay').classList.add('active');
+    }
+
+    function skipOnboarding() {
+      document.getElementById('onboardingOverlay').classList.remove('active');
+      startGame();
+    }
+
+    function nextOnboardingStep() {
+      if (onboardingStep < totalOnboardingSteps) {
+        onboardingStep++;
+        updateOnboardingUI();
+      } else {
+        // Last step - start game
+        document.getElementById('onboardingOverlay').classList.remove('active');
+        startGame();
+      }
+    }
+
+    function prevOnboardingStep() {
+      if (onboardingStep > 1) {
+        onboardingStep--;
+        updateOnboardingUI();
+      }
+    }
+
+    function updateOnboardingUI() {
+      // Update steps
+      document.querySelectorAll('.onboarding-step').forEach(step => {
+        step.classList.remove('active');
+        if (parseInt(step.dataset.step) === onboardingStep) {
+          step.classList.add('active');
+        }
+      });
+
+      // Update dots
+      document.querySelectorAll('.onboarding-dot').forEach(dot => {
+        dot.classList.remove('active');
+        if (parseInt(dot.dataset.dot) === onboardingStep) {
+          dot.classList.add('active');
+        }
+      });
+
+      // Update buttons
+      const backBtn = document.getElementById('onboardingBack');
+      const nextBtn = document.getElementById('onboardingNext');
+
+      backBtn.style.display = onboardingStep > 1 ? 'block' : 'none';
+      nextBtn.textContent = onboardingStep === totalOnboardingSteps ? "Let's Play!" : 'Next';
+    }
+
+    function startGame() {
+      document.getElementById('gameContainer').classList.add('visible');
+      document.getElementById('rulesLink').style.display = 'flex';
+      init();
+    }
+
+    function showRules() {
+      onboardingStep = 1;
+      updateOnboardingUI();
+      document.getElementById('onboardingOverlay').classList.add('active');
+    }
+
     // ===== INITIALIZATION =====
     function init() {
       // Load first question
@@ -1360,6 +1808,10 @@
 
       // Set up keyboard shortcuts
       document.addEventListener('keydown', (e) => {
+        // Ignore if onboarding is active
+        if (document.getElementById('onboardingOverlay').classList.contains('active')) return;
+        if (!document.getElementById('splashScreen').classList.contains('hidden')) return;
+
         if (e.code === 'Space') {
           e.preventDefault();
           if (gameState.revealStage < 3) {
@@ -1382,9 +1834,6 @@
         }
       });
     }
-
-    // Start the game
-    init();
   </script>
 </body>
 </html>
