@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0a0a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Das Duell um die Geld - A different Poker experience</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root {
+      /* Backgrounds */
+      --bg-primary: #0a0a0a;
+      --bg-secondary: #0d1117;
+      --bg-elevated: #161b22;
+
+      /* Text */
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #484f58;
+
+      /* Borders */
+      --border-default: #30363d;
+      --border-muted: #21262d;
+
+      /* Poker Accents */
+      --poker-red: #ff4444;
+      --poker-gold: #ffd700;
+      --poker-green: #00c853;
+
+      /* Glow Effects */
+      --glow-red: rgba(255, 68, 68, 0.4);
+      --glow-gold: rgba(255, 215, 0, 0.4);
+      --glow-green: rgba(0, 200, 83, 0.4);
+
+      /* Timer */
+      --timer-safe: #00c853;
+      --timer-warning: #ffab00;
+      --timer-danger: #ff4444;
+
+      /* Gradients */
+      --gradient-gold: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+      --gradient-card: linear-gradient(180deg, #161b22 0%, #0d1117 100%);
+
+      /* Fonts */
+      --font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+    }
+
+    /* ===== RESET & BASE ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-primary);
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ===== BACKGROUND ENHANCEMENT ===== */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 20% 0%, rgba(255, 215, 0, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(0, 200, 83, 0.03) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(22, 27, 34, 0.5) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.015;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ===== CONTAINER ===== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* ===== GAME AREA ===== */
+    .game-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.25rem;
+    }
+
+    /* Cards row: HINT 1 | ANSWER | HINT 2 */
+    .cards-row {
+      display: grid;
+      grid-template-columns: 1fr 1.5fr 1fr;
+      gap: 1rem;
+      align-items: stretch;
+    }
+
+    /* Actions row */
+    .actions-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1rem;
+    }
+
+    /* ===== HEADER ===== */
+    .header {
+      text-align: center;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border-muted);
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.25rem;
+    }
+
+    .suits {
+      display: flex;
+      gap: 0.25rem;
+      font-size: 1.1rem;
+      opacity: 0.6;
+    }
+
+    .suit.red { color: var(--poker-red); }
+    .suit.black { color: var(--text-secondary); }
+
+    .header-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--text-primary);
+    }
+
+    .title-underline {
+      width: 200px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--poker-gold), transparent);
+      margin: 0.4rem auto;
+      opacity: 0.6;
+    }
+
+    .header-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .header-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border-muted);
+    }
+
+    .sound-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s;
+      background: none;
+      border: none;
+      font-family: inherit;
+      font-size: 0.8rem;
+    }
+
+    .sound-toggle:hover {
+      color: var(--text-secondary);
+    }
+
+    .sound-toggle.active {
+      color: var(--poker-green);
+    }
+
+    /* Reveal Progress Dots */
+    .reveal-progress {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .reveal-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--border-default);
+      transition: all 0.3s ease;
+    }
+
+    .reveal-dot.active {
+      background: var(--poker-gold);
+      box-shadow: 0 0 10px var(--glow-gold);
+    }
+
+    .reveal-dot.completed {
+      background: var(--poker-green);
+      box-shadow: 0 0 10px var(--glow-green);
+    }
+
+    .question-counter {
+      color: var(--text-secondary);
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* ===== TIMER PANEL - Bottom Right ===== */
+    .timer-panel {
+      position: fixed;
+      bottom: 1.5rem;
+      right: 1.5rem;
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, rgba(13, 17, 23, 0.95) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 1rem 1.25rem;
+      text-align: center;
+      z-index: 100;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      min-width: 180px;
+    }
+
+    .timer-display {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.05em;
+      transition: color 0.3s, text-shadow 0.3s;
+      margin-bottom: 0.5rem;
+    }
+
+    .timer-display.warning {
+      color: var(--timer-warning);
+      text-shadow: 0 0 20px rgba(255, 171, 0, 0.4);
+    }
+
+    .timer-display.danger {
+      color: var(--timer-danger);
+      text-shadow: 0 0 20px rgba(255, 68, 68, 0.4);
+      animation: timerPulse 0.5s ease-in-out infinite;
+    }
+
+    .timer-bar {
+      height: 8px;
+      background: var(--bg-elevated);
+      border-radius: 4px;
+      margin-bottom: 0.75rem;
+      overflow: hidden;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .timer-progress {
+      height: 100%;
+      background: linear-gradient(90deg, var(--timer-safe), #00e676);
+      border-radius: 4px;
+      transition: width 0.1s linear, background 0.5s ease;
+      width: 100%;
+    }
+
+    .timer-progress.warning {
+      background: linear-gradient(90deg, var(--timer-warning), #ffc107);
+    }
+
+    .timer-progress.danger {
+      background: linear-gradient(90deg, var(--timer-danger), #ff5252);
+    }
+
+    .timer-controls {
+      display: flex;
+      justify-content: center;
+      gap: 0.4rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .timer-btn {
+      padding: 0.4rem 0.6rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: inherit;
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .timer-btn:hover {
+      background: var(--border-default);
+      color: var(--text-primary);
+    }
+
+    .timer-btn.active {
+      background: var(--poker-green);
+      border-color: var(--poker-green);
+      color: #000;
+      box-shadow: 0 0 10px var(--glow-green);
+    }
+
+    /* ===== QUESTION CARD - HERO ===== */
+    .question-card {
+      background: linear-gradient(135deg, rgba(22, 27, 34, 0.95) 0%, rgba(13, 17, 23, 0.98) 100%);
+      border: 1px solid var(--border-default);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 160px;
+      box-shadow:
+        0 0 0 1px rgba(255, 215, 0, 0.08),
+        0 4px 6px rgba(0, 0, 0, 0.2),
+        0 12px 24px rgba(0, 0, 0, 0.3),
+        0 24px 48px rgba(0, 0, 0, 0.2);
+    }
+
+    .question-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 20px;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), transparent 50%, transparent 50%, rgba(0, 200, 83, 0.1));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      mask-composite: exclude;
+      -webkit-mask-composite: xor;
+      pointer-events: none;
+    }
+
+    .corner-suit {
+      position: absolute;
+      font-size: 1.75rem;
+      opacity: 0.12;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+
+    .question-card:hover .corner-suit {
+      opacity: 0.2;
+    }
+
+    .corner-suit.top-left { top: 12px; left: 16px; }
+    .corner-suit.top-right { top: 12px; right: 16px; }
+    .corner-suit.bottom-left { bottom: 12px; left: 16px; }
+    .corner-suit.bottom-right { bottom: 12px; right: 16px; }
+
+    .question-badge {
+      display: inline-block;
+      background: var(--poker-gold);
+      color: #000;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 0.3rem 1rem;
+      border-radius: 20px;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 12px rgba(255, 215, 0, 0.4);
+    }
+
+    .question-text {
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-align: center;
+      line-height: 1.5;
+      color: var(--text-primary);
+      max-width: 900px;
+    }
+
+    /* ===== HINT CARDS ===== */
+    .hint-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-default);
+      border-radius: 16px;
+      padding: 1.25rem 1.5rem;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      min-height: 120px;
+    }
+
+    /* Mystery overlay when hidden */
+    .hint-card::after {
+      content: '?';
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 10px,
+          rgba(255, 255, 255, 0.02) 10px,
+          rgba(255, 255, 255, 0.02) 20px
+        );
+      opacity: 1;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+
+    .hint-card.revealed::after {
+      opacity: 0;
+    }
+
+    .card-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-label .check {
+      color: var(--poker-green);
+      font-size: 1.1rem;
+      opacity: 0;
+      transform: scale(0) rotate(-45deg);
+      transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    }
+
+    .hint-card.revealed .card-label .check {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+
+    .hint-content {
+      font-size: 1.1rem;
+      color: var(--text-muted);
+      transition: all 0.5s ease;
+      filter: blur(10px);
+      transform: scale(0.98);
+      opacity: 0.3;
+      flex: 1;
+      display: flex;
+      align-items: center;
+    }
+
+    .hint-card.revealed .hint-content {
+      filter: blur(0);
+      transform: scale(1);
+      opacity: 1;
+      color: var(--text-primary);
+    }
+
+    .hint-card.revealed {
+      background: linear-gradient(135deg, rgba(0, 200, 83, 0.03) 0%, var(--bg-secondary) 100%);
+      border-color: var(--poker-green);
+      box-shadow:
+        0 0 0 1px var(--poker-green),
+        0 0 25px rgba(0, 200, 83, 0.15),
+        0 8px 24px rgba(0, 0, 0, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .hint-card.revealing {
+      animation: cardReveal 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes cardReveal {
+      0% { transform: scale(0.96) translateY(4px); opacity: 0.7; }
+      50% { transform: scale(1.01) translateY(-2px); }
+      100% { transform: scale(1) translateY(-2px); opacity: 1; }
+    }
+
+    /* ===== ANSWER CARD ===== */
+    .answer-card {
+      background: var(--bg-secondary);
+      border: 2px solid var(--border-default);
+      border-radius: 16px;
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 120px;
+    }
+
+    /* Locked vault pattern when hidden */
+    .answer-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 12px,
+          rgba(0, 0, 0, 0.15) 12px,
+          rgba(0, 0, 0, 0.15) 24px
+        );
+      opacity: 1;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .answer-card.revealed::before {
+      opacity: 0;
+    }
+
+    .answer-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(255, 215, 0, 0.15) 0%, transparent 70%);
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+    }
+
+    .answer-card.revealed::after {
+      opacity: 1;
+    }
+
+    .answer-card .card-label .check {
+      color: var(--poker-gold);
+      font-size: 1rem;
+    }
+
+    .answer-card .lock-icon {
+      display: block;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+      opacity: 0.4;
+      transition: opacity 0.3s;
+    }
+
+    .answer-card.revealed .lock-icon {
+      opacity: 0;
+      display: none;
+    }
+
+    .answer-content {
+      font-family: var(--font-mono);
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      padding: 0.25rem 0;
+      transition: all 0.5s ease;
+      filter: blur(12px);
+      transform: scale(0.95);
+      opacity: 0.2;
+    }
+
+    .answer-card.revealed .answer-content {
+      filter: blur(0);
+      transform: scale(1);
+      opacity: 1;
+      color: var(--poker-gold);
+      text-shadow:
+        0 0 20px var(--glow-gold),
+        0 0 40px var(--glow-gold),
+        0 4px 8px rgba(0, 0, 0, 0.4);
+      animation: answerGlow 2s ease-in-out infinite;
+    }
+
+    @keyframes answerGlow {
+      0%, 100% { text-shadow: 0 0 20px var(--glow-gold), 0 0 40px var(--glow-gold); }
+      50% { text-shadow: 0 0 30px var(--glow-gold), 0 0 60px var(--glow-gold), 0 0 80px var(--glow-gold); }
+    }
+
+    .answer-card.revealed {
+      background: linear-gradient(135deg, #1a1a2e 0%, var(--bg-secondary) 100%);
+      border-color: var(--poker-gold);
+      box-shadow:
+        0 0 0 2px var(--poker-gold),
+        0 0 50px rgba(255, 215, 0, 0.2),
+        0 0 100px rgba(255, 215, 0, 0.1),
+        0 16px 48px rgba(0, 0, 0, 0.4);
+      transform: translateY(-3px);
+    }
+
+    .answer-card.revealing {
+      animation: answerReveal 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @keyframes answerReveal {
+      0% { transform: scale(0.94); opacity: 0.6; }
+      40% { transform: scale(1.03); }
+      100% { transform: scale(1) translateY(-3px); opacity: 1; }
+    }
+
+    /* Sparkle effect on reveal */
+    .answer-card.revealed .sparkles {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle, var(--poker-gold) 1px, transparent 1px);
+      background-size: 24px 24px;
+      opacity: 0;
+      animation: sparkle 1s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes sparkle {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      100% { opacity: 0; transform: scale(1.1); }
+    }
+
+    @keyframes timerPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    /* Timer presets */
+    .timer-presets {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border-muted);
+    }
+
+    .preset-btn {
+      background: none;
+      border: none;
+      padding: 0.25rem 0.5rem;
+      font-size: 0.7rem;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.2s;
+    }
+
+    .preset-btn:hover {
+      color: var(--text-secondary);
+      background: var(--bg-elevated);
+    }
+
+    .preset-btn.active {
+      color: var(--poker-gold);
+      background: rgba(255, 215, 0, 0.15);
+    }
+
+    /* ===== ACTION BUTTONS ===== */
+    .btn {
+      padding: 1rem 2rem;
+      font-size: 1rem;
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-primary {
+      background: var(--gradient-gold);
+      color: #000;
+      border: none;
+      box-shadow:
+        0 4px 15px rgba(255, 215, 0, 0.25),
+        0 8px 25px rgba(255, 215, 0, 0.15);
+    }
+
+    /* Shine sweep effect */
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+      );
+      transition: left 0.5s ease;
+    }
+
+    .btn-primary:hover::before {
+      left: 100%;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 6px 20px rgba(255, 215, 0, 0.35),
+        0 12px 35px rgba(255, 215, 0, 0.2);
+    }
+
+    .btn-primary:active {
+      transform: translateY(-1px);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-primary:disabled::before {
+      display: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--border-default);
+    }
+
+    .btn-secondary:hover {
+      background: var(--border-default);
+      border-color: var(--text-secondary);
+      transform: translateY(-2px);
+    }
+
+    /* ===== SESSION PROGRESS ===== */
+    .session-progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      padding: 0.75rem 0;
+      border-top: 1px solid var(--border-muted);
+      margin-top: auto;
+    }
+
+    .progress-bar-mini {
+      width: 120px;
+      height: 4px;
+      background: var(--bg-elevated);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar-mini .fill {
+      height: 100%;
+      background: var(--poker-gold);
+      border-radius: 2px;
+      transition: width 0.3s ease;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .container {
+        padding: 0.75rem 1rem;
+        padding-bottom: 200px; /* Space for timer panel */
+      }
+
+      .cards-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+
+      .cards-row .hint-card:first-child {
+        order: 1;
+      }
+
+      .cards-row .answer-card {
+        order: 3;
+      }
+
+      .cards-row .hint-card:last-child {
+        order: 2;
+      }
+
+      .actions-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+      }
+
+      .question-text {
+        font-size: 1.15rem;
+      }
+
+      .answer-content {
+        font-size: 2rem;
+      }
+
+      .timer-panel {
+        bottom: 1rem;
+        right: 1rem;
+        left: 1rem;
+        min-width: auto;
+      }
+    }
+
+    /* ===== FOCUS STATES ===== */
+    button:focus-visible {
+      outline: 2px solid var(--poker-gold);
+      outline-offset: 2px;
+    }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .slide-in {
+      animation: slideIn 0.4s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header: Centered Title -->
+    <header class="header">
+      <div class="header-top">
+        <div class="suits">
+          <span class="suit black">&#9824;</span>
+          <span class="suit red">&#9829;</span>
+        </div>
+        <div class="suits">
+          <span class="suit red">&#9830;</span>
+          <span class="suit black">&#9827;</span>
+        </div>
+      </div>
+      <h1 class="header-title">Das Duell um die Geld</h1>
+      <div class="title-underline"></div>
+      <p class="header-subtitle">A different Poker experience</p>
+
+      <div class="header-controls">
+        <button class="sound-toggle active" id="soundToggle" onclick="toggleSound()">
+          <span id="soundIcon">&#128266;</span>
+          <span id="soundText">Sound: ON</span>
+        </button>
+
+        <div class="reveal-progress" id="revealProgress">
+          <div class="reveal-dot active" id="dot0"></div>
+          <div class="reveal-dot" id="dot1"></div>
+          <div class="reveal-dot" id="dot2"></div>
+          <div class="reveal-dot" id="dot3"></div>
+        </div>
+
+        <span class="question-counter" id="questionCounter">1 / 71</span>
+      </div>
+    </header>
+
+    <!-- Game Area -->
+    <main class="game-area">
+      <!-- Question Card - Hero -->
+      <div class="question-card" id="questionCard">
+        <span class="corner-suit top-left suit black">&#9824;</span>
+        <span class="corner-suit top-right suit red">&#9829;</span>
+        <span class="corner-suit bottom-left suit red">&#9830;</span>
+        <span class="corner-suit bottom-right suit black">&#9827;</span>
+
+        <span class="question-badge" id="questionLabel">QUESTION 100</span>
+        <div class="question-text" id="questionText">
+          How many minutes does a football match last without extra time?
+        </div>
+      </div>
+
+      <!-- Cards Row: HINT 1 | ANSWER | HINT 2 -->
+      <div class="cards-row">
+        <div class="hint-card" id="hint1Card">
+          <div class="card-label">
+            <span>HINT 1</span>
+            <span class="check">&#10003;</span>
+          </div>
+          <div class="hint-content" id="hint1Text">It consists of two halves.</div>
+        </div>
+
+        <div class="answer-card" id="answerCard">
+          <div class="card-label">
+            <span>ANSWER</span>
+            <span class="check">&#9733;</span>
+          </div>
+          <span class="lock-icon">&#128274;</span>
+          <div class="answer-content" id="answerText">90</div>
+          <div class="sparkles"></div>
+        </div>
+
+        <div class="hint-card" id="hint2Card">
+          <div class="card-label">
+            <span>HINT 2</span>
+            <span class="check">&#10003;</span>
+          </div>
+          <div class="hint-content" id="hint2Text">Each half is 45 minutes.</div>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="actions-row">
+        <button class="btn btn-primary" id="revealBtn" onclick="revealNext()">
+          <span>&#127924;</span> REVEAL NEXT
+        </button>
+        <button class="btn btn-secondary" id="nextBtn" onclick="nextQuestion()">
+          <span>&#10145;</span> NEW QUESTION
+        </button>
+      </div>
+
+      <!-- Session Progress -->
+      <div class="session-progress">
+        <span id="progressText">71 questions left</span>
+        <div class="progress-bar-mini">
+          <div class="fill" id="progressFill" style="width: 0%"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Timer Panel - Bottom Right -->
+    <div class="timer-panel">
+      <div class="timer-display" id="timerDisplay">0:30</div>
+      <div class="timer-bar">
+        <div class="timer-progress" id="timerProgress"></div>
+      </div>
+      <div class="timer-controls">
+        <button class="timer-btn" id="startBtn" onclick="startTimer()">&#9654;</button>
+        <button class="timer-btn" id="pauseBtn" onclick="pauseTimer()">&#10074;&#10074;</button>
+        <button class="timer-btn" id="resetBtn" onclick="resetTimer()">&#8635;</button>
+      </div>
+      <div class="timer-presets">
+        <button class="preset-btn" onclick="setTimerPreset(15)">15s</button>
+        <button class="preset-btn active" onclick="setTimerPreset(30)">30s</button>
+        <button class="preset-btn" onclick="setTimerPreset(45)">45s</button>
+        <button class="preset-btn" onclick="setTimerPreset(60)">60s</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== QUESTIONS DATA =====
+    const questions = [
+      // New startup & trivia questions
+      { id: 1, question: "In which year was the world's first website published?", hint1: "It was in the early 1990s, the same year Linus Torvalds released the Linux kernel.", hint2: "Tim Berners-Lee put this very first website online at CERN.", answer: "1991" },
+      { id: 2, question: "How fast was the fastest tennis serve ever recorded?", hint1: "The record is well above 250 km/h and was set by an Australian player.", hint2: "Sam Groth hit this serve in 2012 at a Challenger tournament in Busan.", answer: "263 km/h" },
+      { id: 3, question: "What percentage of startups fail on average?", hint1: "The vast majority do not make it. Only about one in ten survives long term.", hint2: "It is often said that nine out of ten new ventures are not successful.", answer: "About 90%" },
+      { id: 4, question: "In which year was the startup accelerator Y Combinator founded?", hint1: "It was in the mid 2000s, around the same time platforms like YouTube and Reddit emerged.", hint2: "Paul Graham and Jessica Livingston started YC in 2005 in Massachusetts.", answer: "2005" },
+      { id: 5, question: "How many lines of code does the Linux kernel contain approximately as of late 2024?", hint1: "It is tens of millions of lines, far more than 10 million.", hint2: "In 2025 Linux passed the 40 million lines of code mark.", answer: "~40 million" },
+      { id: 6, question: "How many Grand Slam singles titles has Serena Williams won?", hint1: "She is just below the all time record held by Margaret Court with 24 titles.", hint2: "Serena won 23 major singles titles and leads the Open Era.", answer: "23" },
+      { id: 7, question: "How many startups were founded in Germany in 2023?", hint1: "The number is in the low thousands.", hint2: "According to the German Startup Association, there were 2,489 new startups in 2023.", answer: "~2,500" },
+      { id: 8, question: "How many companies has Y Combinator helped launch in total?", hint1: "The number is in the thousands.", hint2: "Since 2005, more than 5,000 startups have gone through YC.", answer: "Over 5,000" },
+      { id: 9, question: "What percentage of all websites worldwide run on WordPress as a CMS?", hint1: "It is well over one third. WordPress clearly dominates the web.", hint2: "Around 42 to 43 percent of all websites are based on WordPress as of 2024.", answer: "About 43%" },
+      { id: 10, question: "How many total career goals has football star Cristiano Ronaldo scored?", hint1: "It is well over 800 goals. He is the most prolific goalscorer of all time.", hint2: "Including club and national team matches, he is close to 960 goals.", answer: "~900 goals" },
+      { id: 11, question: "Approximately how many unicorn startups (valued over $1B) exist worldwide today?", hint1: "The number is in the four digit range and has grown rapidly in recent years.", hint2: "In 2025 the global count passed 1,200 unicorns.", answer: "Over 1,200" },
+      { id: 12, question: "How much is the standard investment Y Combinator currently offers to each accepted startup?", hint1: "The amount was significantly increased in 2022 and is now a six figure sum.", hint2: "YC currently invests $500,000 per startup ($125k for 7% equity plus a $375k SAFE).", answer: "$500,000" },
+      { id: 13, question: "How many searches does Google process worldwide per day?", hint1: "It is a double digit billion figure with a six figure number per second.", hint2: "In 2025 it was about 16.4 billion searches per day, roughly 190,000 per second.", answer: "~16 billion" },
+      { id: 14, question: "How many Olympic gold medals has swimmer Michael Phelps won?", hint1: "He is the most successful Olympian of all time with more than 20 gold medals.", hint2: "Phelps won a total of 23 Olympic gold medals.", answer: "23" },
+      { id: 15, question: "How much capital did OpenAI raise in its Series A funding round?", hint1: "The first major VC round was in the nine figure dollar range.", hint2: "Reports indicate around 150 million US dollars were raised in the Series A.", answer: "~$150 million" },
+      { id: 16, question: "How many Y Combinator funded startups have reached unicorn status?", hint1: "The number of such top startups is in the double digits.", hint2: "There are now more than 80 YC alumni with billion dollar valuations as of 2023.", answer: "Over 80" },
+      { id: 17, question: "How many transistors did the Intel 4004 (1971's first microprocessor) have?", hint1: "Only a few thousand, tiny compared to modern chips with billions of transistors.", hint2: "The 4004 chip had 2,300 transistors.", answer: "2,300" },
+      { id: 18, question: "How many different countries have won the men's FIFA World Cup?", hint1: "The number is a single digit. Brazil, Germany, and Italy are among them.", hint2: "A total of 8 nations have won the World Cup at least once.", answer: "8" },
+      { id: 19, question: "How much venture capital was invested worldwide in startups in 2022?", hint1: "After the record year 2021 with over $600 billion, the total dropped noticeably in 2022.", hint2: "Around 445 billion US dollars were invested globally in 2022.", answer: "~$445 billion" },
+      { id: 20, question: "How many applications does Y Combinator typically receive per batch?", hint1: "The number reaches into the tens of thousands and the acceptance rate is below 2%.", hint2: "Around 20,000 to 25,000 startups apply to YC per batch.", answer: "~20,000" },
+      // Original questions
+      { id: 100, question: "How many minutes does a football match last without extra time?", hint1: "It consists of two halves.", hint2: "Each half is 45 minutes.", answer: "90" },
+      { id: 101, question: "How many countries belong to the European Union (as of 2025)?", hint1: "Less than 30.", hint2: "More than 25.", answer: "27" },
+      { id: 102, question: "How many planets are in our solar system?", hint1: "Pluto no longer counts as a planet.", hint2: "The number is single-digit.", answer: "8" },
+      { id: 103, question: "How tall is the Eiffel Tower in meters (without antenna)?", hint1: "Under 320 m.", hint2: "Over 300 m.", answer: "300" },
+      { id: 104, question: "How many federal states does Germany have?", hint1: "More than 10.", hint2: "Less than 20.", answer: "16" },
+      { id: 105, question: "How many weeks are in a year (approximately)?", hint1: "Slightly more than 50.", hint2: "Slightly less than 53.", answer: "52" },
+      { id: 106, question: "How many keys does a standard piano have?", hint1: "More than 80.", hint2: "Less than 90.", answer: "88" },
+      { id: 107, question: "How many seconds are in an hour?", hint1: "More than 3000.", hint2: "Less than 5000.", answer: "3600" },
+      { id: 108, question: "How many stars are on the US flag?", hint1: "More than 40.", hint2: "Less than 60.", answer: "50" },
+      { id: 109, question: "How many teeth does an adult human normally have?", hint1: "More than 25.", hint2: "Less than 35.", answer: "32" },
+      { id: 110, question: "How many seconds are in a day?", hint1: "More than 80,000.", hint2: "Less than 120,000.", answer: "86400" },
+      { id: 111, question: "How tall is Mount Everest in meters?", hint1: "More than 8000.", hint2: "Less than 9000.", answer: "8848" },
+      { id: 112, question: "How many rings does the Olympic symbol have?", hint1: "More than 3.", hint2: "Less than 7.", answer: "5" },
+      { id: 113, question: "How many continents are there on Earth?", hint1: "Between 5 and 8.", hint2: "Traditionally 7.", answer: "7" },
+      { id: 114, question: "How many days does February have in a leap year?", hint1: "More than 28.", hint2: "Equals 4 times 7.", answer: "29" },
+      { id: 115, question: "How many letters are in the English alphabet?", hint1: "Less than 30.", hint2: "More than 20.", answer: "26" },
+      { id: 116, question: "How many zeros does a trillion have?", hint1: "More than 9.", hint2: "Less than 15.", answer: "12" },
+      { id: 117, question: "How many minutes are in half an hour?", hint1: "Half of 60.", hint2: "More than 20.", answer: "30" },
+      { id: 118, question: "How many months have 31 days?", hint1: "More than 5.", hint2: "Less than 8.", answer: "7" },
+      { id: 119, question: "How many corners does a cube have?", hint1: "More than 6.", hint2: "Less than 12.", answer: "8" },
+      { id: 120, question: "How many players are on a football team on the field?", hint1: "More than 9.", hint2: "Less than 12.", answer: "11" },
+      { id: 121, question: "How many meters are in a kilometer?", hint1: "More than 900.", hint2: "Less than 1500.", answer: "1000" },
+      { id: 122, question: "What is the approximate diameter of Mars' moon Phobos in km?", hint1: "It's a two-digit number.", hint2: "Less than 30.", answer: "22" },
+      { id: 123, question: "How many minutes is a basketball game (4×12 minutes)?", hint1: "More than 40.", hint2: "Less than 60.", answer: "48" },
+      { id: 124, question: "How many grams are in a kilogram?", hint1: "More than 500.", hint2: "Exactly 1000.", answer: "1000" },
+      { id: 125, question: "How many days are in October?", hint1: "More than 25.", hint2: "Less than 32.", answer: "31" },
+      { id: 126, question: "How many legs does a spider have?", hint1: "More than 6.", hint2: "Less than 10.", answer: "8" },
+      { id: 127, question: "How many teeth does a shark have on average?", hint1: "More than 300.", hint2: "Less than 500.", answer: "350" },
+      { id: 128, question: "How many states does the USA have?", hint1: "More than 45.", hint2: "Less than 55.", answer: "50" },
+      { id: 129, question: "How many days are in November?", hint1: "Less than 31.", hint2: "More than 25.", answer: "30" },
+      { id: 130, question: "How many moons does Jupiter have (as of 2025)?", hint1: "More than 70.", hint2: "Less than 80.", answer: "79" },
+      { id: 131, question: "How many colors are in a rainbow?", hint1: "More than 5.", hint2: "Less than 8.", answer: "7" },
+      { id: 132, question: "How many days are in a leap year?", hint1: "More than 360.", hint2: "52 weeks plus 2.", answer: "366" },
+      { id: 133, question: "How many seconds are in a minute?", hint1: "More than 50.", hint2: "Less than 70.", answer: "60" },
+      { id: 134, question: "How many wisdom teeth does a human normally have?", hint1: "0 to 2 per jaw side.", hint2: "Usually 4 total.", answer: "4" },
+      { id: 135, question: "How long is the equator approximately in kilometers?", hint1: "More than 40,000.", hint2: "Less than 45,000.", answer: "40075" },
+      { id: 136, question: "How many days are in June?", hint1: "More than 25.", hint2: "Less than 32.", answer: "30" },
+      { id: 137, question: "How many ice ages occurred in the last 2 million years?", hint1: "More than 4.", hint2: "Less than 10.", answer: "8" },
+      { id: 138, question: "How many stripes are on the US flag?", hint1: "More than 10.", hint2: "Less than 15.", answer: "13" },
+      { id: 139, question: "How many elements are in the periodic table (up to Oganesson)?", hint1: "More than 100.", hint2: "Less than 120.", answer: "118" },
+      { id: 140, question: "How many oceans are there (officially)?", hint1: "More than 4.", hint2: "Less than 7.", answer: "5" },
+      { id: 141, question: "How many million people live in Germany (as of 2025)?", hint1: "More than 80M.", hint2: "Less than 85M.", answer: "83" },
+      { id: 142, question: "How many bones does an adult human have?", hint1: "More than 180.", hint2: "Less than 230.", answer: "206" },
+      { id: 143, question: "How many liters does a standard oil barrel hold?", hint1: "Less than 300.", hint2: "More than 150.", answer: "200" },
+      { id: 144, question: "How many days are in March?", hint1: "More than 25.", hint2: "Less than 32.", answer: "31" },
+      { id: 145, question: "How many opponents does a player face in a 6-player tournament?", hint1: "More than 3.", hint2: "Less than 6.", answer: "5" },
+      { id: 146, question: "How many years are in a decade?", hint1: "Exactly 10.", hint2: "More than 9.", answer: "10" },
+      { id: 147, question: "How many seconds does light take to circle Earth once?", hint1: "Less than 1 second.", hint2: "More than 0.1 seconds.", answer: "0.13" },
+      { id: 148, question: "How many million people live in New York City (approximately)?", hint1: "More than 7M.", hint2: "Less than 9M.", answer: "8" },
+      { id: 149, question: "How many meters is a marathon?", hint1: "Over 40,000.", hint2: "Under 45,000.", answer: "42195" },
+      { id: 150, question: "How many weekends are in a year?", hint1: "More than 50.", hint2: "Less than 55.", answer: "52" }
+    ];
+
+    // ===== GAME STATE =====
+    let gameState = {
+      currentQuestion: null,
+      currentIndex: 0,
+      revealStage: 0,
+      usedQuestions: [],
+      soundEnabled: true,
+      timerDuration: 30,
+      timerRemaining: 30,
+      timerInterval: null,
+      timerRunning: false
+    };
+
+    // ===== SOUND SYSTEM =====
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx = null;
+
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new AudioContext();
+      }
+    }
+
+    function playSound(type) {
+      if (!gameState.soundEnabled) return;
+      initAudio();
+
+      const oscillator = audioCtx.createOscillator();
+      const gainNode = audioCtx.createGain();
+      oscillator.connect(gainNode);
+      gainNode.connect(audioCtx.destination);
+
+      switch(type) {
+        case 'flip':
+          oscillator.frequency.setValueAtTime(800, audioCtx.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(400, audioCtx.currentTime + 0.1);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.1);
+          break;
+        case 'reveal':
+          oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+          oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1);
+          oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.4);
+          break;
+        case 'tick':
+          oscillator.frequency.setValueAtTime(1000, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.05);
+          break;
+        case 'warning':
+          oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+          oscillator.frequency.setValueAtTime(400, audioCtx.currentTime + 0.1);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.2);
+          break;
+        case 'buzzer':
+          oscillator.type = 'sawtooth';
+          oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.5);
+          break;
+        case 'next':
+          oscillator.frequency.setValueAtTime(300, audioCtx.currentTime);
+          oscillator.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.15);
+          gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+          oscillator.start(audioCtx.currentTime);
+          oscillator.stop(audioCtx.currentTime + 0.15);
+          break;
+      }
+    }
+
+    function toggleSound() {
+      gameState.soundEnabled = !gameState.soundEnabled;
+      const toggle = document.getElementById('soundToggle');
+      const icon = document.getElementById('soundIcon');
+      const text = document.getElementById('soundText');
+
+      if (gameState.soundEnabled) {
+        toggle.classList.add('active');
+        icon.innerHTML = '&#128266;';
+        text.textContent = 'Sound: ON';
+        playSound('flip');
+      } else {
+        toggle.classList.remove('active');
+        icon.innerHTML = '&#128263;';
+        text.textContent = 'Sound: OFF';
+      }
+    }
+
+    // ===== TIMER FUNCTIONS =====
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timerDisplay');
+      const progress = document.getElementById('timerProgress');
+
+      display.textContent = formatTime(gameState.timerRemaining);
+
+      const percentage = (gameState.timerRemaining / gameState.timerDuration) * 100;
+      progress.style.width = `${percentage}%`;
+
+      // Remove all state classes
+      display.classList.remove('warning', 'danger');
+      progress.classList.remove('warning', 'danger');
+
+      // Add appropriate state class
+      if (percentage <= 25) {
+        display.classList.add('danger');
+        progress.classList.add('danger');
+      } else if (percentage <= 50) {
+        display.classList.add('warning');
+        progress.classList.add('warning');
+      }
+    }
+
+    function startTimer() {
+      if (gameState.timerRunning) return;
+
+      initAudio();
+      gameState.timerRunning = true;
+      document.getElementById('startBtn').classList.add('active');
+
+      gameState.timerInterval = setInterval(() => {
+        gameState.timerRemaining--;
+        updateTimerDisplay();
+
+        if (gameState.timerRemaining <= 5 && gameState.timerRemaining > 0) {
+          playSound('tick');
+        }
+
+        if (gameState.timerRemaining <= 0) {
+          pauseTimer();
+          playSound('buzzer');
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      gameState.timerRunning = false;
+      document.getElementById('startBtn').classList.remove('active');
+
+      if (gameState.timerInterval) {
+        clearInterval(gameState.timerInterval);
+        gameState.timerInterval = null;
+      }
+    }
+
+    function resetTimer() {
+      pauseTimer();
+      gameState.timerRemaining = gameState.timerDuration;
+      updateTimerDisplay();
+    }
+
+    function setTimerPreset(seconds) {
+      gameState.timerDuration = seconds;
+      gameState.timerRemaining = seconds;
+      updateTimerDisplay();
+
+      document.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.classList.remove('active');
+        if (btn.textContent === `${seconds}s`) {
+          btn.classList.add('active');
+        }
+      });
+    }
+
+    // ===== REVEAL PROGRESS DOTS =====
+    function updateRevealDots() {
+      for (let i = 0; i <= 3; i++) {
+        const dot = document.getElementById(`dot${i}`);
+        dot.classList.remove('active', 'completed');
+
+        if (i < gameState.revealStage) {
+          dot.classList.add('completed');
+        } else if (i === gameState.revealStage) {
+          dot.classList.add('active');
+        }
+      }
+    }
+
+    // ===== QUESTION FUNCTIONS =====
+    function getRandomQuestion() {
+      const available = questions.filter(q => !gameState.usedQuestions.includes(q.id));
+
+      if (available.length === 0) {
+        gameState.usedQuestions = [];
+        return questions[Math.floor(Math.random() * questions.length)];
+      }
+
+      return available[Math.floor(Math.random() * available.length)];
+    }
+
+    function loadQuestion(question) {
+      gameState.currentQuestion = question;
+      gameState.revealStage = 0;
+
+      // Update UI
+      document.getElementById('questionLabel').textContent = `QUESTION ${question.id}`;
+      document.getElementById('questionText').textContent = question.question;
+      document.getElementById('hint1Text').textContent = question.hint1;
+      document.getElementById('hint2Text').textContent = question.hint2;
+      document.getElementById('answerText').textContent = question.answer;
+
+      // Reset card states
+      document.getElementById('hint1Card').classList.remove('revealed', 'revealing');
+      document.getElementById('hint2Card').classList.remove('revealed', 'revealing');
+      document.getElementById('answerCard').classList.remove('revealed', 'revealing');
+
+      // Update counter
+      const usedCount = gameState.usedQuestions.length;
+      document.getElementById('questionCounter').textContent = `${usedCount + 1} / ${questions.length}`;
+      document.getElementById('progressText').textContent = `${questions.length - usedCount - 1} questions left`;
+
+      // Update progress bar
+      const progressPercent = (usedCount / questions.length) * 100;
+      document.getElementById('progressFill').style.width = `${progressPercent}%`;
+
+      // Update reveal dots
+      updateRevealDots();
+
+      // Reset timer
+      resetTimer();
+
+      // Update button state
+      document.getElementById('revealBtn').disabled = false;
+
+      // Animation
+      document.getElementById('questionCard').classList.add('slide-in');
+      setTimeout(() => {
+        document.getElementById('questionCard').classList.remove('slide-in');
+      }, 400);
+    }
+
+    function revealNext() {
+      gameState.revealStage++;
+      updateRevealDots();
+
+      switch(gameState.revealStage) {
+        case 1:
+          revealCard('hint1Card');
+          playSound('flip');
+          break;
+        case 2:
+          revealCard('hint2Card');
+          playSound('flip');
+          break;
+        case 3:
+          revealCard('answerCard');
+          playSound('reveal');
+          document.getElementById('revealBtn').disabled = true;
+          break;
+      }
+    }
+
+    function revealCard(cardId) {
+      const card = document.getElementById(cardId);
+      card.classList.add('revealing');
+
+      setTimeout(() => {
+        card.classList.add('revealed');
+        card.classList.remove('revealing');
+      }, 250);
+    }
+
+    function nextQuestion() {
+      if (gameState.currentQuestion) {
+        gameState.usedQuestions.push(gameState.currentQuestion.id);
+      }
+
+      playSound('next');
+      const question = getRandomQuestion();
+      loadQuestion(question);
+    }
+
+    // ===== INITIALIZATION =====
+    function init() {
+      // Load first question
+      const firstQuestion = getRandomQuestion();
+      loadQuestion(firstQuestion);
+
+      // Set up keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space') {
+          e.preventDefault();
+          if (gameState.revealStage < 3) {
+            revealNext();
+          } else {
+            nextQuestion();
+          }
+        } else if (e.code === 'KeyN') {
+          nextQuestion();
+        } else if (e.code === 'KeyT') {
+          if (gameState.timerRunning) {
+            pauseTimer();
+          } else {
+            startTimer();
+          }
+        } else if (e.code === 'KeyR') {
+          resetTimer();
+        } else if (e.code === 'KeyS') {
+          toggleSound();
+        }
+      });
+    }
+
+    // Start the game
+    init();
+  </script>
+</body>
+</html>
